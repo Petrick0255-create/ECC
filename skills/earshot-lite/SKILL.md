@@ -9,11 +9,18 @@ metadata:
 
 Leonxlnx/earshot의 아이디어(소리를 듣고, 평가하고, 코드로 만든다)를 네트워크·GPU 없이도 돌아가게 직접 구현한 도구다. 원본 earshot의 청취 모델(소리를 말로 찾는 CLAP 등)은 없고, 수치 측정과 스펙트로그램 시트로 판단한다. 원본과 다르다는 점은 사용자에게 숨기지 않는다.
 
-## 준비
+## When to Use
+- 코드로 만든 영상(모션그래픽, 시연 영상, Remotion·HyperFrames 결과물)에 효과음을 입힐 때
+- 영상의 음량(LUFS)·트루피크·소리 없는 컷을 수치로 점검할 때
+- 녹음 효과음 후보 중 원하는 성격(whoosh 등)에 가까운 것을 고를 때
+
+## How It Works
+
+### 준비
 - 작업 폴더에 `sfxkit.py`가 없으면 맨 아래 '코드'를 그대로 `sfxkit.py`로 저장한다(Write 도구).
 - 필요한 것: python3, numpy, scipy, matplotlib, ffmpeg. claude.ai 채팅 환경에는 기본으로 있다. 네트워크가 막힌 환경에서는 설치를 시도하지 않고, PC에서 빠진 것이 있으면 사용자에게 알린 뒤 설치한다.
 
-## 명령 (`python3 sfxkit.py <명령>`)
+### 명령 (`python3 sfxkit.py <명령>`)
 | 명령 | 하는 일 |
 |---|---|
 | `describe FILE` | 길이, LUFS·트루피크·LRA, 밝기(Hz), 음정감(tonality), 어택·감쇠, 클리핑, 한 줄 요약 |
@@ -30,13 +37,21 @@ Leonxlnx/earshot의 아이디어(소리를 듣고, 평가하고, 코드로 만�
 
 레시피 주요 파라미터: whoosh(d, f0, f1, peak), impact(d, low), click(d, f), pop(d, f0, f1), riser(d, f0, f1), ding(f, d), swell(d, f), glitch(d), thud(d, f).
 
-## 작업 순서
+### 작업 순서
 1. 영상을 받으면 먼저 `sheet`와 `gaps`로 지금 소리 상태를 본다. 원본 오디오가 있으면 `describe`로 LUFS를 확인한다.
 2. 컷과 등장 요소를 보고 큐 시트(시각, 소리, 게인, 팬)를 표로 짠다. 단순하면 `kit`, 의도가 있으면 `mix`.
 3. 결과를 다시 `sheet`·`gaps`·`describe`로 확인한다: 의도하지 않은 무음 컷이 없는지, -14±1 LUFS, 트루피크 -1 dBFS 이하, 클리핑 없음.
 4. 직접 들을 수 없으므로 전달할 때 "수치로 확인했으니 들어보고 어색한 곳을 말해 달라"고 솔직히 말한다.
 
 게인 기준(효과음 트랙): whoosh -16, 작은 whoosh -19, pop·click -22, impact -14, ding -18 dB. 원본에 소리가 있으면 효과음 전체가 -4 dB 더 낮게 섞이고, 전체는 -14 LUFS로 맞춰진다. 같은 소리를 반복할 때는 파라미터를 조금씩 바꾸고 팬을 좌우로 번갈아(±0.3) 반복감을 줄인다.
+
+## Examples
+```bash
+python3 sfxkit.py gaps demo.mp4                     # 소리 없는 컷 찾기
+python3 sfxkit.py kit demo.mp4 -o demo_sfx.mp4      # 컷마다 whoosh 자동 배치
+python3 sfxkit.py mix demo.mp4 -o out.mp4 4.53:whoosh@d=0.5:-16:-0.3 12.9:impact:-14 20.1:ding:-18
+python3 sfxkit.py describe out.mp4                  # LUFS·트루피크 확인
+```
 
 ## 원본 earshot이 필요하면
 github.com/Leonxlnx/earshot (MIT). Python 3.10+, ffmpeg, 약 1.1GB 모델(CPU)이 필요하고 Claude Code에는 MCP로 연결한다. 네트워크가 열린 PC의 Claude Code라면 원본 설치를 권하고, 네트워크가 막힌 채팅 환경에서는 안내만 한다.
