@@ -899,7 +899,10 @@
         "skills/taste",
         "skills/tasteforge-video",
         "skills/taste-distillation",
-        "skills/taste-application"
+        "skills/taste-application",
+        "skills/earshot-lite",
+        "skills/openverse-sfx",
+        "skills/auto-foley"
       ],
       "targets": [
         "claude",
